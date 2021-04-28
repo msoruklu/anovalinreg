@@ -93,6 +93,8 @@ def ANOVA1_is_orthogonal(group_sizes, c1, c2)
     
     elif sum([c1[i]*c2[i]/n for i,n in enumerate(group_sizes)]) == 0:
         return True
+
+    else: Return False
     
    
     
