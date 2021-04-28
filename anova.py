@@ -88,7 +88,8 @@ def ANOVA1_is_orthogonal(group_sizes, c1, c2)
     orthogonal if their dot product divided by group size at each point is zero.
     '''
     if not ANOVA1_is_contrast(c1) or not ANOVA1_is_contrast(c2):
-        return "WARNING: One of the coefficient vectors is not a constrast!" 
+        print("WARNING: One of the coefficient vectors is not a constrast!")
+    	return False
     
     elif sum([c1[i]*c2[i]/n for i,n in enumerate(group_sizes)]) == 0:
         return True
