@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[18]:
-
 
 from scipy import stats
 from IPython.display import display
 import numpy as np
 import pandas as pd
 
-
-# In[19]:
 
 
 def ANOVA1_partition_TSS(data):
@@ -40,8 +36,6 @@ def ANOVA1_partition_TSS(data):
     
     return {"SStotal":SStotal,"SSw": SSw,"SSb": SSb}
 
-
-# In[66]:
 
 
 def ANOVA1_test_equality(data,signifLevel = 0.05):
@@ -79,38 +73,28 @@ def ANOVA1_test_equality(data,signifLevel = 0.05):
     print("Decision: {}, H0, at the {} level of significance.".format(decision,signifLevel))
 
 
-# In[75]:
-
-
-data=[[28,23,14,27,31,24],
-      [33,36,34,29,24],
-      [18,21,20,22],
-      [11,14,11,16]]
-SStotal, SSw, SSb = ANOVA1_partition_TSS(data).values()
-
-
-# In[76]:
-
-
-ANOVA1_test_equality(data)
-
-
-# In[65]:
-
-
-
-crit = 2.8450678052793514
-stats.f.cdf(crit, dfn=3, dfd=39)
-
-
-# In[39]:
-
-
-stats.f.ppf(q=1-0.05, dfn=3, dfd=39)
-
-
-# In[ ]:
-
-
-
-
+def ANOVA1_is_contrast(c):
+    '''
+    A linear combination c = (c1, . . . , cI ) of the means 
+    is called a contrast if sum(c1, . . . , cI) =0.
+    '''
+    if sum(c) == 0:
+        return True
+    else: return False
+    
+def ANOVA1_is_orthogonal(group_sizes, c1, c2)
+    '''
+    Two contrasts constructed by c1, c2 ∈ C are said to be
+    orthogonal if their dot product divided by group size at each point is zero.
+    '''
+    if not ANOVA1_is_contrast(c1) or not ANOVA1_is_contrast(c2):
+        return "WARNING: One of the coefficient vectors is not a constrast!" 
+    
+    elif sum([c1[i]*c2[i]/n for i,n in enumerate(group_sizes)]) == 0:
+        return True
+    
+   
+    
+    
+    
+    
