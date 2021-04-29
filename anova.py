@@ -82,22 +82,75 @@ def ANOVA1_is_contrast(c):
         return True
     else: return False
     
-def ANOVA1_is_orthogonal(group_sizes, c1, c2)
+def ANOVA1_is_orthogonal(group_sizes, c1, c2):
     '''
     Two contrasts constructed by c1, c2 ∈ C are said to be
     orthogonal if their dot product divided by group size at each point is zero.
     '''
     if not ANOVA1_is_contrast(c1) or not ANOVA1_is_contrast(c2):
         print("WARNING: One of the coefficient vectors is not a constrast!")
-    	return False
+        return False
     
     elif sum([c1[i]*c2[i]/n for i,n in enumerate(group_sizes)]) == 0:
         return True
 
-    else: Return False
+    else: return False
     
-   
+
+def Bonferroni_correction(FWER, numTests):
+    #return significance level for each test with Bonferroni simply alpha/m
+    return FWER / numTests
+
+def Sidak_correction(FWER, numTests):
+    #return significance level for each test with Sidak simply 1-(1-alpha)^(1/m)
+    return 1-(1-FWER)**(1/numTests)
+    
+def ANOVA2_partition_TSS(data):
+    '''
+    This function partitions the sum of squares in a two way ANOVA layout.
+    The function takes a data set Xi,j,k for i = 1, . . . ,I and j = 1, . . . , J and k = 1, . . . ,K and return
+    SStotal, SSa, SSb, SSab, SSe
+
+    SStotal = SSa + SSb + SSab + SSe.
+
+    '''
+    I = len(data)
+    J = len(data[0])
+    K = len(data[0][0])
+    meanAll = np.mean([k for j in [j for i in data for j in i] for k in j]) #linearize the data then get mean
+    meansI = [np.hstack(i).mean() for i in data]
+    meansJ = [np.mean(j) for j in zip(*[i for i in data])]
+    meansIJ = [[np.mean(j) for j in i] for i in data]
+    
+    SSa = J*K*sum((meansI[i]-meanAll)**2 for i in range(I))
+    SSb = I*K*sum((meansJ[j]-meanAll)**2 for j in range(J))
+    SSab = K*sum(sum((meansIJ[i][j]-meansJ[j]-meansI[i]+meanAll)**2 for j in range(J)) for i in range(I))
+    SSe = sum(sum(sum((data[i][j][k]-meansIJ[i][j])**2 for k in range(K)) for j in range(J)) for i in range(I))
+    
+    
+    SStotal = SSa + SSb + SSab + SSe
+    
+    return {"SStotal":SStotal,"SSa": SSa,"SSb": SSb,"SSab": SSab,"SSe": SSe}
+
+def ANOVA2_MLE(data):
+    #returns MLE estimates of µ,ai,bj and δij
+    I = len(data)
+    J = len(data[0])
+    K = len(data[0][0])
+    meanAll = np.mean([k for j in [j for i in data for j in i] for k in j]) #linearize the data then get mean
+    meansI = [np.hstack(i).mean() for i in data]
+    meansJ = [np.mean(j) for j in zip(*[i for i in data])]
+    meansIJ = [[np.mean(j) for j in i] for i in data]
+    
+    return {"µ":meanAll, "ai":[meansI[i]-meanAll for i in range(I)], "bj":[meansJ[j]-meanAll for j in range(J)], "δij":[[meansIJ[i][j]-meansJ[j]-meansI[i]+meanAll for j in range(J)] for i in range(I)]}
+    
+    
+
     
     
     
+    
+    
+    
+
     
