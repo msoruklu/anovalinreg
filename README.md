@@ -27,18 +27,18 @@ The package contains the functions named and described below.
 
 * ANOVA1_CI_linear_combs(data, C, method ="best", signifLevel = 0.05)
     Input:
-        – a data set Xi,j for j = 1, . . . , ni and i = 1, . . . , I,
-        – Significance level α,
-        – An m × I matrix C, where each row defines linear combination of the group means.
-        – Method: This may be “Scheffe”, “Tukey”, “Bonferroni”, “Sidak”, “best”
+        * a data set Xi,j for j = 1, . . . , ni and i = 1, . . . , I,
+        * Significance level α,
+        * An m × I matrix C, where each row defines linear combination of the group means.
+        * Method: This may be “Scheffe”, “Tukey”, “Bonferroni”, “Sidak”, “best”
     Output: As the output, the function returns simultaneous confidence intervals for those linear combinations.
 
 * ANOVA1_test_linear_combs(data,C,d,FWER=0.05,method="best")
     Input:
-    – a data set Xi,j for j = 1, . . . , ni and i = 1, . . . , I,
-    – FWER α,
-    – An m × I matrix C and a m × 1 vector d, where each row of C defines linear combination of the group means and each element of d is the hypothesized value for the corresponding combination.
-    – Method: This may be “Scheffe”, “Tukey”, “Bonferroni”, “Sidak”, “best”.
+    * a data set Xi,j for j = 1, . . . , ni and i = 1, . . . , I,
+    * FWER α,
+    * An m × I matrix C and a m × 1 vector d, where each row of C defines linear combination of the group means and each element of d is the hypothesized value for the corresponding combination.
+    * Method: This may be “Scheffe”, “Tukey”, “Bonferroni”, “Sidak”, “best”.
         H0 : c_i_1µ_1 + . . . + c_i_Iµ_I = d_i, i = 1, . . . , m.
     Output: As the output, the function returns the test outcomes, in such a way that FWER is kept at α.
 
@@ -52,9 +52,9 @@ The package contains the functions named and described below.
 * ANOVA2_test_equality(data, alpha = 0.05, choice = "A")
     This function performs one of the basic three tests in the two-way ANOVA layout. The function takes 
     Xi,j,k for i = 1, . . . , I, j = 1, . . . , J, and k = 1, . . . , K, and a significance level α and performs one of the following (depending on the choice).
-        – The hypothesis that a1 = . . . = aI = 0.
-        – The hypothesis that b1 = . . . = bI = 0.
-        – The hypothesis that all δij ’s are equal to 0.
+        * The hypothesis that a1 = . . . = aI = 0.
+        * The hypothesis that b1 = . . . = bI = 0.
+        * The hypothesis that all δij ’s are equal to 0.
     The choice for the test should also be inputted as an input as either “A”, “B”, or
     “AB”. The function prints the ANOVA table. 
 
