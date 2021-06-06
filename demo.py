@@ -7,10 +7,10 @@ from linear_regression import *
 import data_for_ANOVA as ANOVA
 import data_for_LR as LR
 
-data = ANOVA.data_anova1 
+data = ANOVA.data_anova1
 alpha = 0.1 #set significance level 
-c1 =[1,-1,0,0]
-c2 = [0,0,1,-1]
+c1 =[1,0,0,-1]
+c2 = [0,-1,1,0]
 C = [c1,c2]
 
 print("Printing the ANOVA function's results with the given data.\n\n")
@@ -43,37 +43,48 @@ print("--------------------------------------------------------------")
 print("best:",ANOVA1_CI_linear_combs(data,C,method="best",signifLevel=alpha))    
 
 print("--------------------------------------------------------------\n")
-print("Scheffe:",ANOVA1_test_linear_combs(data,C,[1]*len(C),FWER=alpha,method="Scheffe"))
+print("Scheffe:",ANOVA1_test_linear_combs(data,C,[0]*len(C),FWER=alpha,method="Scheffe"))
 print("--------------------------------------------------------------") 
-print("Bonferroni:",ANOVA1_test_linear_combs(data,C,[1]*len(C),FWER=alpha,method="Bonferroni"))
+print("Bonferroni:",ANOVA1_test_linear_combs(data,C,[0]*len(C),FWER=alpha,method="Bonferroni"))
 print("--------------------------------------------------------------") 
-print("Sidak:",ANOVA1_test_linear_combs(data,C,[1]*len(C),FWER=alpha,method="Sidak"))
+print("Sidak:",ANOVA1_test_linear_combs(data,C,[0]*len(C),FWER=alpha,method="Sidak"))
 print("--------------------------------------------------------------") 
-print("Tukey:",ANOVA1_test_linear_combs(data,C,[1]*len(C),FWER=alpha,method="Tukey"))
+print("Tukey:",ANOVA1_test_linear_combs(data,C,[0]*len(C),FWER=alpha,method="Tukey"))
 print("--------------------------------------------------------------") 
-print("best:",ANOVA1_test_linear_combs(data,C,[1]*len(C),FWER=alpha,method="best"))
-print("--------------------------------------------------------------\n\n\n")
+print("best:",ANOVA1_test_linear_combs(data,C,[0]*len(C),FWER=alpha,method="best"))
+print("End of ANOVA 1")
+print("--------------------------------------------------------------\n\n")
 
-# design = np.transpose(LR.X)
-# response = np.transpose(LR.y)
-# alpha = 0.1 #set significance level 
-
-
-# C = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-# c_zero = [21, 0.20, 0.30]
-# D= [[1, 23, 53],
-#     [1, 67, 87]]
-
+data = ANOVA.data_anova2
+print("Printing the result for function: {}".format("ANOVA2_partition_TSS"))
+print(ANOVA2_partition_TSS(data))
+print("--------------------------------------------------------------\n")
+print("Printing the result for function: {}".format("ANOVA2_MLE"))
+print(ANOVA2_MLE(data))
+print("--------------------------------------------------------------\n")
+print("choice: A")
+ANOVA2_test_equality(data, alpha, choice = "A")
+print("choice: B")
+ANOVA2_test_equality(data, alpha, choice = "B")
+print("choice: AB")
+ANOVA2_test_equality(data, alpha , choice = "AB")
+print("--------------------------------------------------------------\n")
+print("End of ANOVA 2\n\n\n")
 #import the red winequality dataset --> quality is the response variable
 
 data = pd.read_csv('test_data/winequality-red.csv',delimiter=",")
+features = list(data.columns)
+features.insert(0,"beta_zero")
+print("Features in the dataset:\n {}\n".format(features))
 data=data.values
+
+alpha=0.05
 design = data[:,:-1]
+#inset  column of ones
+design = np.insert(design, 0, np.ones(len(design)), axis=1)
 response = data[:,-1] #quality at the last column
 C = np.identity(len(design[0]-1))
 c_zero = np.ones(len(design[0]-1))
-D= [[1, 23, 53],
-    [1, 67, 87]]
 
 print("Printing the LINEAR REGRESSION function's results with the given data.\n\n")
 print("design: " ,str(design))
@@ -94,21 +105,35 @@ print("--------------------------------------------------------------\n")
 print("Printing the result for function: {}".format("Mult_norm_LR_is_in_CR"))
 pprint(Mult_norm_LR_is_in_CR(design,response,C,c_zero,alpha))
 print("--------------------------------------------------------------\n")
-print("Printing the result for function: {}".format("Mult_norm_LR_test_general"))
+print("Printing the result for function: {}\n".format("Mult_norm_LR_test_general"))
+print("\nTesting the hypothesis that {} has no impact on the quality.".format(features[6]))
+print("H0: β6=0, H1: not H0 \n")
+C = [[0,0,0,0,0,0,1,0,0,0,0,0]]
+c_zero = [0]
 Mult_norm_LR_test_general(design,response,C,c_zero,alpha)
 print("--------------------------------------------------------------\n")
 print("Printing the result for function: {}".format("Mult_norm_LR_test_comp"))
-Mult_norm_LR_test_comp(design,response,[2],alpha)
+print("\nTesting the hypothesis that {}, {}, {} and {} has no impact on the quality.".format(features[1],features[3],features[4],features[9]))
+print("H0: β1=β3=β4=β9=0, H1: not H0 \n")
+J = [1,3,4,9]
+Mult_norm_LR_test_comp(design,response,J,alpha)
 print("--------------------------------------------------------------\n")
 print("Printing the result for function: {}".format("Mult_norm_LR_test_linear_reg"))
+print("\nTesting the hypothesis that there exists a linear regression at all.")
+print("H0: All β's are 0. H1: not H0")
 Mult_norm_LR_test_linear_reg(design,response,alpha)
 print("--------------------------------------------------------------\n")
-# print("Printing the result for function: {} for different methods.".format("Mult_norm_LR_pred_CI"))
-# pprint("Scheffe: ",str(Mult_norm_LR_pred_CI(design,response,D,alpha,"Scheffe")))
-# print("--------------------------------------------------------------") 
-# pprint("Bonferroni: ",str(Mult_norm_LR_pred_CI(design,response,D,alpha,"Bonferroni")))
-# print("--------------------------------------------------------------") 
-# pprint("best: ",str(Mult_norm_LR_pred_CI(design,response,D,alpha,"best")))
-# print("--------------------------------------------------------------\n")
+D= [[1,2,3,4,456,5,6,6,7,8,250,16],
+    [1,78,6,14,5,15,6,40,7,100,26,16]]
+print("Printing the result for function: {} for different methods.".format("Mult_norm_LR_pred_CI"))
+print( "Scheffe: \n")
+pprint(Mult_norm_LR_pred_CI(design,response,D,alpha,"Scheffe"))
+print("--------------------------------------------------------------\n") 
+print( "Bonferroni: \n")
+pprint(Mult_norm_LR_pred_CI(design,response,D,alpha,"Bonferroni"))
+print("--------------------------------------------------------------") 
+print("Best: \n")
+pprint(Mult_norm_LR_pred_CI(design,response,D,alpha,"best"))
+print("--------------------------------------------------------------\n")
 
 print("End of all functions. You can try with your own data as well.")
