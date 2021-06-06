@@ -197,7 +197,7 @@ def ANOVA1_CI_linear_combs(data, C, method ="best", signifLevel = 0.05): #best a
     isValid=True
     if method == "Tukey": #valid for pairwise comparisons
         #if all row of C contains 2 non-zero entry and sum==0--> pairwise comparisons
-        if IsPairwiseDiff(C):
+        if not IsPairwiseDiff(C):
             isValid=False
     if isValid:
         CI = dict()
@@ -283,7 +283,7 @@ def ANOVA1_test_linear_combs(data,C,d,FWER=0.05,method="best"):
     isValid=True
     if method == "Tukey": #valid for pairwise comparisons
         #if all row of C contains 2 non-zero entry and sum==0--> pairwise comparisons
-        if IsPairwiseDiff(C):
+        if not IsPairwiseDiff(C):
             isValid=False
     if isValid:
         confInterval = ANOVA1_CI_linear_combs(data,C,method,FWER)
