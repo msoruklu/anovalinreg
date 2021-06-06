@@ -99,7 +99,7 @@ def Mult_norm_LR_is_in_CR(X,y,C,c_zero,alpha=0.05):
 def Mult_norm_LR_test_general(X,y,C,c_zero,alpha=0.05):
     '''Function that takes an n × (k + 1) matrix X, n × 1 vector y, an r × (k + 1)
         matrix C with rank r, a r×1 vector c0, and a significance level α as inputs, and tests
-        the null hypothesis H0 : Cβ = c0 vs H1 : Cβ 6= c0 at a significance level of α. '''
+        the null hypothesis H0 : Cβ = c0 vs H1 : Cβ != c0 at a significance level of α. '''
 
     decision = Mult_norm_LR_is_in_CR(X,y,C,c_zero,alpha)
 
@@ -111,14 +111,12 @@ def Mult_norm_LR_test_general(X,y,C,c_zero,alpha=0.05):
 def Mult_norm_LR_test_comp(X,y,J,alpha=0.05):
     '''Function that takes an n × (k + 1) matrix X, n × 1 vector y, a significance
     level α, and j1, . . . , jr ∈ {0, . . . , k} as inputs, and returns the outcome of testing
-    H0 : βj1 = . . . = βjr = 0 vs H1 : not H0. You can use the previous function with a
-    suitable C and c0.'''
+    H0 : βj1 = . . . = βjr = 0 vs H1 : not H0.'''
 
     X,y,J = np.array(X),np.array(y),np.array(J)
-    n=len(X)
-    k = len(X[0])-1
     C = np.zeros(shape =(len(J),len(X[0])))
     
+    #create a suitable C from J
     for i in range(len(J)):
         C[i][J[i]]=1
 
@@ -128,10 +126,10 @@ def Mult_norm_LR_test_comp(X,y,J,alpha=0.05):
 
 def Mult_norm_LR_test_linear_reg(X,y,alpha=0.05):
     J=np.arange(1,len(X[0]),1)
-    
+
     Mult_norm_LR_test_comp(X,y,J,alpha)
 
-def Mult_norm_LR_simul_CI_Bonferroni(X,y,alpha=0.05):
+def Mult_norm_LR_simul_CI_Bonferroni(X,y,D,alpha=0.05):
     #function to calculate confidence intervals according do Bonferroni correction
     n=len(X)
     k = len(X[0])-1
@@ -140,11 +138,30 @@ def Mult_norm_LR_simul_CI_Bonferroni(X,y,alpha=0.05):
     tstats = stats.t.ppf(1-alpha, n-k-1) 
     XTXinv = np.linalg.inv(np.matmul(np.array(X).transpose(),np.array(X)))
     CI=[]
-    for i,bi in enumerate(beta):
-        rhs = tstats*Se*np.sqrt(XTXinv[i][i])
-        lower = bi-rhs
-        upper = bi+rhs
-        CI.append({"beta_{}".format(i):{"lower":lower,"upper":upper}})
+    for i,di in enumerate(D):
+        sqr_term = np.dot(np.dot(np.transpose(di),XTXinv),di)
+        rhs = tstats*Se*np.sqrt(sqr_term)
+        lower = np.dot(np.transpose(di),beta)-rhs
+        upper = np.dot(np.transpose(di),beta)+rhs
+        CI.append([lower,upper])
+    return CI
+    
+def Mult_norm_LR_simul_CI_Scheffe(X,y,D,alpha=0.05):
+    #function to calculate confidence intervals according do Scheffe
+    n=len(X)
+    k = len(X[0])-1
+    beta,sigmaSqr,SeSqr = Mult_LR_Least_squares(X,y).values()
+    Se = np.sqrt(SeSqr)
+    fstats = stats.f.ppf(1-alpha,k+1, n-k-1) 
+    XTXinv = np.linalg.inv(np.matmul(np.array(X).transpose(),np.array(X)))
+    CI=[]
+    for i,di in enumerate(D):
+        sqr_term1 = np.dot(np.dot(np.transpose(di),XTXinv),di)
+        sqr_term2 = (k+1)*fstats
+        rhs = np.sqrt(sqr_term2)*Se*np.sqrt(sqr_term1)
+        lower = np.dot(np.transpose(di),beta)-rhs
+        upper = np.dot(np.transpose(di),beta)+rhs
+        CI.append([lower,upper])
     return CI
 
 def Mult_norm_LR_pred_CI(X,y,D,alpha=0.05,method="best"):
@@ -154,27 +171,21 @@ def Mult_norm_LR_pred_CI(X,y,D,alpha=0.05,method="best"):
         regression model, where di is the i’th row of the matrix.'''
     #we use Mult_norm_LR_simul_CI and Mult_norm_LR_simul_CI_Bonferroni functions here and return narrower one if method is "best"
     bonferroni_level = Bonferroni_correction(alpha,len(D))
-    CI_bonfer=Mult_norm_LR_simul_CI_Bonferroni(X,y,bonferroni_level)
-    CI_Scheffe = Mult_norm_LR_simul_CI(X,y,alpha)
-    beta_bonfer,beta_scheffe = [],[]
-    for i in range(len(CI_bonfer)):
-        beta_bonfer.append((CI_bonfer[i]["beta_{}".format(i)]["upper"]+CI_bonfer[i]["beta_{}".format(i)]["lower"])/2)
-        beta_scheffe.append((CI_Scheffe[i]["beta_{}".format(i)]["upper"]+CI_Scheffe[i]["beta_{}".format(i)]["lower"])/2)
-    lhs_bonfer=np.dot(D,beta_bonfer)
-    lhs_scheffe=np.dot(D,beta_scheffe)
+    CI_bonfer=Mult_norm_LR_simul_CI_Bonferroni(X,y,D,bonferroni_level)
+    CI_Scheffe = Mult_norm_LR_simul_CI_Scheffe(X,y,D,alpha)
+
     if method=="Bonferroni":
         return CI_bonfer
     elif method=="Scheffe":
         return CI_Scheffe
     #check the best, narrower is the best
     else:
-        intervals_bonfer = [abs(list(list(betavals.values())[0].values())[1]-list(list(betavals.values())[0].values())[0]) for betavals in CI_bonfer] #upper-lower differences
-        intervals_Scheffe = [abs(list(list(betavals.values())[0].values())[1]-list(list(betavals.values())[0].values())[0]) for betavals in CI_Scheffe] #upper-lower differences
-        best =  [intervals_bonfer[i]-intervals_Scheffe[i] >0 for i in range(len(intervals_bonfer))] #if Bonferroni has wider interval
-        
-        if sum(best) ==len(intervals_bonfer): return CI_Scheffe 
-        else: return CI_bonfer
-
+        minBonfer = min([CI_bonfer[i][1]-CI_bonfer[i][0] for i in range(len(CI_bonfer))])
+        minScheffe = min([CI_Scheffe[i][1]-CI_Scheffe[i][0] for i in range(len(CI_Scheffe))])
+    
+        if minBonfer<minScheffe: return {"Best is Bonferroni":CI_bonfer} 
+        else: return {"Best is Scheffe":CI_Scheffe}
+ 
 
 
 
