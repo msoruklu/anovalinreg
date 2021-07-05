@@ -25,7 +25,7 @@ def ANOVA1_partition_TSS(data):
     SSw = 0
     SStotal = 0
     SSb = 0
-    meanSample = np.mean([np.mean(treat) for treat in data])
+    meanSample = np.mean([j for i in data for j in i]) #linearize the data then get mean
     
 
     for i in range(len(data)):
